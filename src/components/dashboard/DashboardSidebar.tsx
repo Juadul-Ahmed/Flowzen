@@ -1,24 +1,54 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navigationItems } from "./navigation";
-import { Sparkles } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 
-export default function DashboardSidebar() {
+interface DashboardSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function DashboardSidebar({
+  isOpen,
+  onClose,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
-      {/* Brand */}
-      <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-6">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-green-700 text-white">
-          <Sparkles size={20} />
+    <aside
+      className={`
+        fixed inset-y-0 left-0 z-50
+        flex h-screen w-64 flex-col
+        border-r border-slate-200 bg-white
+        transition-transform duration-300
+        lg:sticky lg:top-0 lg:z-30 lg:translate-x-0
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+    >
+      {/* Logo */}
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-green-700 text-white">
+            <Sparkles size={20} />
+          </div>
+
+          <span className="text-xl font-bold tracking-tight text-slate-900">
+            Flowzen
+          </span>
         </div>
 
-        <span className="text-xl font-bold tracking-tight text-slate-900">
-          Flowzen
-        </span>
+        {/* Mobile close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+          aria-label="Close sidebar"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -39,6 +69,7 @@ export default function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-green-50 text-green-700"
@@ -52,8 +83,8 @@ export default function DashboardSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-slate-200 p-4">
+      {/* Upgrade card */}
+      <div className="shrink-0 border-t border-slate-200 p-4">
         <div className="rounded-xl bg-green-50 p-3">
           <p className="text-sm font-semibold text-green-900">
             Flowzen Pro

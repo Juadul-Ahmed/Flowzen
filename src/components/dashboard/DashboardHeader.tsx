@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -7,22 +8,40 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  Menu,
 } from "lucide-react";
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  onMenuClick: () => void;
+}
+
+export default function DashboardHeader({
+  onMenuClick,
+}: DashboardHeaderProps) {
   const [isDark, setIsDark] = useState(false);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
-      {/* Left: Page title */}
-      <div>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
+
+      {/* Page title and mobile menu */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
+          aria-label="Open navigation"
+        >
+          <Menu size={22} />
+        </button>
+
         <h1 className="text-lg font-semibold text-slate-900">
           Overview
         </h1>
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-4">
+      {/* Header actions */}
+      <div className="flex items-center gap-2 sm:gap-4">
+
         {/* Search */}
         <div className="relative hidden sm:block">
           <Search
@@ -33,11 +52,11 @@ export default function DashboardHeader() {
           <input
             type="search"
             placeholder="Search anything..."
-            className="h-9 w-64 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-green-600 focus:bg-white"
+            className="h-9 w-48 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-green-600 focus:bg-white lg:w-64"
           />
         </div>
 
-        {/* Theme toggle */}
+        {/* Temporary theme toggle */}
         <button
           type="button"
           onClick={() => setIsDark((current) => !current)}
@@ -71,8 +90,12 @@ export default function DashboardHeader() {
             Flowzen User
           </span>
 
-          <ChevronDown size={16} className="text-slate-400" />
+          <ChevronDown
+            size={16}
+            className="hidden text-slate-400 md:block"
+          />
         </button>
+
       </div>
     </header>
   );
