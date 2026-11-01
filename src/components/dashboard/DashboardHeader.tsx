@@ -1,15 +1,14 @@
 
 "use client";
 
-import { useTheme } from "next-themes";
 import {
   Search,
   Bell,
-  Sun,
-  Moon,
   ChevronDown,
   Menu,
 } from "lucide-react";
+
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 interface DashboardHeaderProps {
   onMenuClick: () => void;
@@ -18,10 +17,6 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({
   onMenuClick,
 }: DashboardHeaderProps) {
-  const { theme, setTheme } = useTheme();
-
-  const isDark = theme === "dark";
-
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-700 dark:bg-slate-900">
 
@@ -59,16 +54,7 @@ export default function DashboardHeader({
         </div>
 
         {/* Theme toggle */}
-       <button
-  type="button"
-  onClick={() => setTheme(isDark ? "light" : "dark")}
-  className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-  aria-label="Toggle color theme"
-  title="Toggle color theme"
->
-  <Moon size={20} className="block dark:hidden" />
-  <Sun size={20} className="hidden dark:block" />
-</button>
+        <ThemeToggle />
 
         {/* Notifications */}
         <button
@@ -77,7 +63,6 @@ export default function DashboardHeader({
           aria-label="Notifications"
         >
           <Bell size={20} />
-
           <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-green-600" />
         </button>
 
