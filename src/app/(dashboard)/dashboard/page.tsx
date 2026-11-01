@@ -1,7 +1,7 @@
-
 import StatsOverview from "@/components/dashboard/overview/StatsOverview";
 import RevenueChart from "@/components/dashboard/overview/RevenueChart";
-
+import SalesPerformanceChart from "@/components/dashboard/overview/SalesPerformanceChart";
+import RecentActivities from "@/components/dashboard/overview/RecentActivities";
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
@@ -20,7 +20,12 @@ export default function DashboardPage() {
       <StatsOverview />
 
       {/* Revenue Analytics */}
-      <RevenueChart />
+      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-2">
+        <RevenueChart />
+        <SalesPerformanceChart />
+      </div>
+
+      <RecentActivities  />
     </div>
   );
 }
