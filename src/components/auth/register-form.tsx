@@ -1,9 +1,10 @@
+
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import { Button, toast, FieldError, Input, Label, TextField } from "@heroui/react";
+import { useRouter } from "next/navigation";
 
 import {
   registerSchema,
@@ -13,7 +14,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 
 export function RegisterForm() {
-  const [serverError, setServerError] = useState("");
+  const router = useRouter();
 
   const {
     register,
@@ -29,16 +30,25 @@ export function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
-    setServerError("");
+    try {
+      const { error } = await authClient.signUp.email({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      });
 
-    const { error } = await authClient.signUp.email({
-      name: values.name,
-      email: values.email,
-      password: values.password,
-    });
+      if (error) {
+        toast.danger(error.message || "Registration failed.");
+        return;
+      }
 
-    if (error) {
-      setServerError(error.message || "Registration failed.");
+      toast.success("Account created successfully!", {
+        description: "Welcome to Flowzen. Your account is ready.",
+      });
+
+      router.push("/dashboard");
+    } catch {
+      toast.danger("Something went wrong. Please try again.");
     }
   };
 
@@ -75,8 +85,6 @@ export function RegisterForm() {
         />
         <FieldError>{errors.password?.message}</FieldError>
       </TextField>
-
-      {serverError && <p className="text-sm text-danger">{serverError}</p>}
 
       <Button
         type="submit"

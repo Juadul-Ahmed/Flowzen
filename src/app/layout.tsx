@@ -4,6 +4,7 @@ import "./globals.css";
 import ReduxProvider from "@/lib/redux/ReduxProvider";
 import { Suspense } from "react";
 import ThemeProvider from "@/components/providers/ThemeProvider";
+import { Toast } from "@heroui/react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <Suspense fallback={<div>Loading Flowzen...</div>}>
           <ThemeProvider>
+            <Toast.Provider />
             <ReduxProvider>{children}</ReduxProvider>
           </ThemeProvider>
         </Suspense>
