@@ -1,4 +1,3 @@
-
 "use client";
 
 import { motion } from "framer-motion";
@@ -33,23 +32,21 @@ const revenueData = [
   { month: "Dec", revenue: 52000 },
 ];
 
-export default function RevenueChart({
-  isLoading = false,
-}: RevenueChartProps) {
+export default function RevenueChart({ isLoading = false }: RevenueChartProps) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-slate-800"
     >
       {/* Chart heading */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Revenue Analytics
         </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Monthly revenue performance throughout the year.
         </p>
       </div>
@@ -80,41 +77,39 @@ export default function RevenueChart({
                   x2="0"
                   y2="1"
                 >
-                  <stop
-                    offset="5%"
-                    stopColor="#15803D"
-                    stopOpacity={0.25}
-                  />
+                  <stop offset="5%" stopColor="#15803D" stopOpacity={0.25} />
 
-                  <stop
-                    offset="95%"
-                    stopColor="#15803D"
-                    stopOpacity={0}
-                  />
+                  <stop offset="95%" stopColor="#15803D" stopOpacity={0} />
                 </linearGradient>
               </defs>
 
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="#E2E8F0"
+                stroke="var(--chart-grid)"
               />
 
               <XAxis
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
+                tick={{
+                  fill: "var(--chart-text)",
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
                 dy={10}
               />
 
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
-                tickFormatter={(value: number) =>
-                  `$${value / 1000}k`
-                }
+                tick={{
+                  fill: "var(--chart-text)",
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+                tickFormatter={(value: number) => `$${value / 1000}k`}
               />
 
               <Tooltip
@@ -124,8 +119,13 @@ export default function RevenueChart({
                 ]}
                 contentStyle={{
                   borderRadius: "10px",
-                  border: "1px solid #E2E8F0",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  border: "1px solid var(--chart-tooltip-border)",
+                  backgroundColor: "var(--chart-tooltip-bg)",
+                  color: "var(--chart-tooltip-text)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+                }}
+                labelStyle={{
+                  color: "var(--chart-tooltip-text)",
                 }}
               />
 

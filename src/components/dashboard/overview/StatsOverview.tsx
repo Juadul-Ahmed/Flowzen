@@ -1,4 +1,3 @@
-
 "use client";
 
 import { motion } from "framer-motion";
@@ -77,11 +76,11 @@ export default function StatsOverview({
   return (
     <section>
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
           Overview
         </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Here's what's happening with your business.
         </p>
       </div>

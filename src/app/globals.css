@@ -1,25 +1,73 @@
 @import "tailwindcss";
 @import "@heroui/styles";
+
+/* Use the .dark class to activate Tailwind dark: utilities */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
+
+  --card: #ffffff;
+  --border: #e2e8f0;
+
+  --muted: #64748b;
+  --primary: #15803d;
+
+  /* Chart colors - Light theme */
+--chart-grid: #e2e8f0;
+--chart-text: #475569;
+--chart-tooltip-bg: #ffffff;
+--chart-tooltip-border: #e2e8f0;
+--chart-tooltip-text: #0f172a;
+--chart-cursor: #f1f5f9;
 }
 
+/* Dark theme */
+.dark {
+  color-scheme: dark;
+
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+
+  --card: #1e293b;
+  --border: #334155;
+
+  --muted: #94a3b8;
+  --primary: #22c55e;
+
+  /* Chart colors - Dark theme */
+--chart-grid: #475569;
+--chart-text: #cbd5e1;
+--chart-tooltip-bg: #1e293b;
+--chart-tooltip-border: #475569;
+--chart-tooltip-text: #f1f5f9;
+--chart-cursor: #334155;
+}
+
+/* Expose CSS variables to Tailwind */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Global styles */
+html {
+  min-height: 100%;
 }
 
 body {
+  min-height: 100%;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;

@@ -33,6 +33,7 @@ const salesData = [
   { month: "Nov", leads: 275, won: 68, lost: 18 },
   { month: "Dec", leads: 300, won: 75, lost: 17 },
 ];
+
 export default function SalesPerformanceChart({
   isLoading = false,
 }: SalesPerformanceChartProps) {
@@ -41,14 +42,14 @@ export default function SalesPerformanceChart({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-slate-800"
     >
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Sales Performance
         </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Monthly comparison of leads and deal outcomes.
         </p>
       </div>
@@ -66,29 +67,40 @@ export default function SalesPerformanceChart({
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="#E2E8F0"
+                stroke="var(--chart-grid)"
               />
 
               <XAxis
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
+                tick={{
+                  fill: "var(--chart-text)",
+                  fontSize: 12,
+                }}
               />
 
               <YAxis
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
-                tick={{ fill: "#64748B", fontSize: 12 }}
+                tick={{
+                  fill: "var(--chart-text)",
+                  fontSize: 12,
+                }}
               />
 
               <Tooltip
-                cursor={{ fill: "#F1F5F9" }}
+                cursor={{ fill: "var(--chart-cursor)" }}
                 contentStyle={{
                   borderRadius: "10px",
-                  border: "1px solid #E2E8F0",
+                  border: "1px solid var(--chart-tooltip-border)",
+                  backgroundColor: "var(--chart-tooltip-bg)",
+                  color: "var(--chart-tooltip-text)",
                   fontSize: "12px",
+                }}
+                labelStyle={{
+                  color: "var(--chart-tooltip-text)",
                 }}
               />
 
@@ -96,7 +108,10 @@ export default function SalesPerformanceChart({
                 verticalAlign="bottom"
                 height={36}
                 iconType="circle"
-                wrapperStyle={{ fontSize: "12px" }}
+                wrapperStyle={{
+                  fontSize: "12px",
+                  color: "var(--chart-text)",
+                }}
               />
 
               <Bar

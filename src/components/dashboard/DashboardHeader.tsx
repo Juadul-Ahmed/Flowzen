@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useTheme } from "next-themes";
 import {
   Search,
   Bell,
@@ -18,23 +18,25 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({
   onMenuClick,
 }: DashboardHeaderProps) {
-  const [isDark, setIsDark] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const isDark = theme === "dark";
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-700 dark:bg-slate-900">
 
       {/* Page title and mobile menu */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onMenuClick}
-          className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
+          className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
           aria-label="Open navigation"
         >
           <Menu size={22} />
         </button>
 
-        <h1 className="text-lg font-semibold text-slate-900">
+        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Overview
         </h1>
       </div>
@@ -52,24 +54,26 @@ export default function DashboardHeader({
           <input
             type="search"
             placeholder="Search anything..."
-            className="h-9 w-48 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-green-600 focus:bg-white lg:w-64"
+            className="h-9 w-48 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-green-600 focus:bg-white lg:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800"
           />
         </div>
 
-        {/* Temporary theme toggle */}
-        <button
-          type="button"
-          onClick={() => setIsDark((current) => !current)}
-          className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
-          aria-label="Toggle theme"
-        >
-          {isDark ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
+        {/* Theme toggle */}
+       <button
+  type="button"
+  onClick={() => setTheme(isDark ? "light" : "dark")}
+  className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+  aria-label="Toggle color theme"
+  title="Toggle color theme"
+>
+  <Moon size={20} className="block dark:hidden" />
+  <Sun size={20} className="hidden dark:block" />
+</button>
 
         {/* Notifications */}
         <button
           type="button"
-          className="relative rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
+          className="relative rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
           aria-label="Notifications"
         >
           <Bell size={20} />
@@ -80,13 +84,13 @@ export default function DashboardHeader({
         {/* Profile */}
         <button
           type="button"
-          className="flex items-center gap-2 rounded-lg p-1.5 transition hover:bg-slate-100"
+          className="flex items-center gap-2 rounded-lg p-1.5 transition hover:bg-slate-100 dark:hover:bg-slate-800"
         >
-          <div className="flex size-8 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700">
+          <div className="flex size-8 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700 dark:bg-green-900 dark:text-green-300">
             F
           </div>
 
-          <span className="hidden text-sm font-medium text-slate-700 md:block">
+          <span className="hidden text-sm font-medium text-slate-700 md:block dark:text-slate-200">
             Flowzen User
           </span>
 

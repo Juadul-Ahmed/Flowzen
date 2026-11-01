@@ -1,4 +1,3 @@
-
 import type { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -19,20 +18,20 @@ export default function StatCard({
   const isPositive = trend === "up";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-slate-800">
       {/* Card heading */}
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-500">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {title}
         </p>
 
-        <div className="flex size-10 items-center justify-center rounded-lg bg-green-50 text-green-700">
+        <div className="flex size-10 items-center justify-center rounded-lg bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400">
           <Icon size={20} strokeWidth={1.8} />
         </div>
       </div>
 
       {/* Main value */}
-      <h3 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
+      <h3 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
         {value}
       </h3>
 
@@ -40,13 +39,15 @@ export default function StatCard({
       <div className="mt-2 flex items-center gap-2">
         <span
           className={`text-xs font-semibold ${
-            isPositive ? "text-green-600" : "text-red-600"
+            isPositive
+              ? "text-green-600 dark:text-green-400"
+              : "text-red-600 dark:text-red-400"
           }`}
         >
           {isPositive ? "↑" : "↓"} {change}
         </span>
 
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-slate-400 dark:text-slate-500">
           vs. last month
         </span>
       </div>
