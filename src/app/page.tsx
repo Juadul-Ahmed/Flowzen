@@ -1,5 +1,7 @@
 
+
 import HeroActions from "@/components/home/HeroActions";
+
 
 export default function Home() {
   return (
@@ -15,6 +17,8 @@ export default function Home() {
       </div>
 
       <HeroActions />
+   
+     
     </main>
   );
 }
