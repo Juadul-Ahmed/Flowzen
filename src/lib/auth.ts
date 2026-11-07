@@ -15,6 +15,16 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  // Development-only email verification.
+  emailVerification: {
+    async sendVerificationEmail({ user, url }) {
+      console.info("\n========== FLOWZEN EMAIL VERIFICATION ==========");
+      console.info("Recipient:", user.email);
+      console.info("Verification link:", url);
+      console.info("================================================\n");
+    },
+  },
+
   plugins: [
     organization({
       requireEmailVerificationOnInvitation: true,
