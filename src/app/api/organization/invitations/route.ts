@@ -1,6 +1,6 @@
-
 import { auth } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { authorize } from "@/lib/permissions/authorize";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { inviteMemberSchema } from "@/lib/validations/invitation";
 
 export async function POST(request: Request) {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Validate the submitted invitation details.
+    // 2. Validate invitation details.
     const body = await request.json();
     const validation = inviteMemberSchema.safeParse(body);
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Get the active organization.
+    // 3. Get the active organization from the session.
     const organizationId = session.session.activeOrganizationId;
 
     if (!organizationId) {
@@ -41,31 +41,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Verify the user's membership and role.
-    const membership = await prisma.member.findFirst({
-      where: {
-        userId: session.user.id,
-        organizationId,
-      },
-      select: {
-        role: true,
-      },
+    // 4. Determine the required permission.
+    const requiredPermission =
+      validation.data.role === "admin"
+        ? PERMISSIONS.MEMBER_INVITE_ADMIN
+        : PERMISSIONS.MEMBER_INVITE_MEMBER;
+
+    // 5. Check authorization.
+    const authorization = await authorize({
+      userId: session.user.id,
+      organizationId,
+      permission: requiredPermission,
     });
 
-    if (!membership) {
-      return Response.json(
-        { message: "You are not a member of this organization." },
-        { status: 403 }
-      );
-    }
-
-    // 5. Enforce Flowzen's invitation role rules.
-    const canInvite =
-      membership.role === "owner" ||
-      (membership.role === "admin" &&
-        validation.data.role === "member");
-
-    if (!canInvite) {
+    if (!authorization.allowed) {
       return Response.json(
         {
           message:
@@ -75,7 +64,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 6. Let Better Auth create and process the invitation.
+    // 6. Create the invitation through Better Auth.
     const invitation = await auth.api.createInvitation({
       headers: request.headers,
       body: {
