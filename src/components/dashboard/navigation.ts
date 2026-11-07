@@ -51,9 +51,14 @@ export const navigationItems = [
     href: "/analytics",
     icon: ChartNoAxesCombined,
   },
-  {
+    {
     title: "Settings",
     href: "/settings",
     icon: Settings,
+  },
+  {
+    title: "Members",
+    href: "/settings/members",
+    icon: Users,
   },
 ];
