@@ -1,7 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -10,6 +6,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  UNQUALIFIED
+  LOST
+  CONVERTED
 }
 
 model User {
@@ -53,14 +58,14 @@ model Account {
   userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  refreshToken           String?
+  idToken                String?
+  accessTokenExpiresAt   DateTime?
+  refreshTokenExpiresAt  DateTime?
+  scope                  String?
+  password               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   @@index([userId])
   @@map("account")
@@ -88,6 +93,10 @@ model Organization {
   members     Member[]
   invitations Invitation[]
 
+  companies   Company[]
+  contacts    Contact[]
+  leads       Lead[]
+
   @@unique([slug])
   @@map("organization")
 }
@@ -101,6 +110,9 @@ model Member {
   role           String       @default("member")
   createdAt      DateTime
 
+  assignedLeads  Lead[]
+
+  @@unique([id, organizationId])
   @@index([organizationId])
   @@index([userId])
   @@map("member")
@@ -121,4 +133,101 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitation")
+}
+
+model Company {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name           String
+  nameNormalized String
+  website        String?
+  industry       String?
+  phone          String?
+  address        String?
+  description    String?
+
+  contacts       Contact[]
+  leads          Lead[]       @relation("LeadCompany")
+  convertedLeads Lead[]       @relation("LeadConvertedCompany")
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([id, organizationId])
+  @@unique([organizationId, nameNormalized])
+  @@index([organizationId])
+  @@index([organizationId, name])
+  @@map("company")
+}
+
+model Contact {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  companyId      String?
+  company        Company?     @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  jobTitle       String?
+
+  convertedFromLead Lead?     @relation("LeadConvertedContact")
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([id, organizationId])
+  @@index([organizationId])
+  @@index([organizationId, companyId])
+  @@index([organizationId, email])
+  @@index([organizationId, lastName, firstName])
+  @@map("contact")
+}
+
+model Lead {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  companyId      String?
+  company        Company?     @relation("LeadCompany", fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  assignedToId   String?
+  assignedTo     Member?      @relation(fields: [assignedToId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  source         String?
+  status         LeadStatus   @default(NEW)
+  notes          String?
+
+  convertedAt        DateTime?
+  convertedContactId String?   @unique
+  convertedContact   Contact?  @relation("LeadConvertedContact", fields: [convertedContactId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  convertedCompanyId String?
+  convertedCompany   Company?  @relation("LeadConvertedCompany", fields: [convertedCompanyId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([id, organizationId])
+  @@unique([convertedContactId, organizationId])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, assignedToId])
+  @@index([organizationId, companyId])
+  @@index([organizationId, email])
+  @@index([organizationId, lastName, firstName])
+  @@map("lead")
 }

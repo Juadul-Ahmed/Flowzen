@@ -33,6 +33,7 @@ export async function authorize({
       role: true,
     },
   });
+ 
 
   if (!membership) {
     return {
