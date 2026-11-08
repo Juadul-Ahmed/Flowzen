@@ -37,10 +37,14 @@ export default function MembersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Automatically select an organization if none is active.
+  // Automatically select an organization when authenticated.
   useEffect(() => {
+    let isActive = true;
+
     async function selectOrganization() {
       if (
+        isSessionLoading ||
+        !session ||
         isOrganizationsLoading ||
         isOrganizationLoading ||
         activeOrganization ||
@@ -49,43 +53,64 @@ export default function MembersPage() {
         return;
       }
 
-      const result = await authClient.organization.setActive({
-        organizationId: organizations[0].id,
-      });
+      try {
+        const result = await authClient.organization.setActive({
+          organizationId: organizations[0].id,
+        });
 
-      if (result.error) {
-        console.error(
-          "Failed to select organization:",
-          result.error
-        );
+        if (!isActive) return;
+
+        if (result.error) {
+          console.error(
+            "Failed to select organization:",
+            result.error
+          );
+        }
+      } catch (err) {
+        if (isActive) {
+          console.error("Failed to select organization:", err);
+        }
       }
     }
 
     selectOrganization();
+
+    return () => {
+      isActive = false;
+    };
   }, [
+    session,
+    isSessionLoading,
     organizations,
     isOrganizationsLoading,
     isOrganizationLoading,
     activeOrganization,
   ]);
 
-  // Fetch organization members.
+  // Fetch organization members only for authenticated users.
   useEffect(() => {
     let isActive = true;
 
     async function fetchMembers() {
       if (
+        isSessionLoading ||
         isOrganizationLoading ||
         isOrganizationsLoading
       ) {
         return;
       }
 
+      if (!session) {
+        setMembers([]);
+        setError(null);
+        setIsLoading(false);
+        return;
+      }
+
       if (!activeOrganization?.id) {
-        if (isActive) {
-          setMembers([]);
-          setIsLoading(false);
-        }
+        setMembers([]);
+        setError(null);
+        setIsLoading(false);
         return;
       }
 
@@ -116,6 +141,7 @@ export default function MembersPage() {
               ? err.message
               : "Failed to load organization members."
           );
+          setMembers([]);
         }
       } finally {
         if (isActive) {
@@ -130,6 +156,8 @@ export default function MembersPage() {
       isActive = false;
     };
   }, [
+    session,
+    isSessionLoading,
     activeOrganization?.id,
     isOrganizationLoading,
     isOrganizationsLoading,

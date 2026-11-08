@@ -1,15 +1,26 @@
-
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import { getSession } from "@/lib/auth";
 
-export default function DashboardLayout({
+export const instant = false;
+
+export default async function DashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return (
-    <DashboardShell>
-      {children}
-    </DashboardShell>
-  );
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (!session.user.emailVerified) {
+    redirect(
+      `/verify-email?email=${encodeURIComponent(session.user.email)}`,
+    );
+  }
+
+  return <DashboardShell>{children}</DashboardShell>;
 }

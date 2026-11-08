@@ -29,28 +29,37 @@ export function RegisterForm() {
     },
   });
 
-  const onSubmit = async (values: RegisterFormValues) => {
-    try {
-      const { error } = await authClient.signUp.email({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-      });
 
-      if (error) {
-        toast.danger(error.message || "Registration failed.");
-        return;
-      }
+const onSubmit = async (values: RegisterFormValues) => {
+  try {
+    // Create the account.
+    const { error } = await authClient.signUp.email({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      callbackURL: "/dashboard",
+    });
 
-      toast.success("Account created successfully!", {
-        description: "Welcome to Flowzen. Your account is ready.",
-      });
-
-      router.push("/dashboard");
-    } catch {
-      toast.danger("Something went wrong. Please try again.");
+    if (error) {
+      toast.danger(error.message || "Registration failed.");
+      return;
     }
-  };
+
+    // Clear any previous authenticated session.
+    await authClient.signOut();
+
+    toast.success("Account created successfully!", {
+      description: "Please check your inbox to verify your email.",
+    });
+
+    router.push(
+      `/verify-email?email=${encodeURIComponent(values.email)}`
+    );
+  } catch {
+    toast.danger("Something went wrong. Please try again.");
+  }
+};
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

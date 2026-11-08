@@ -28,27 +28,40 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
-    try {
-      const { error } = await authClient.signIn.email({
-        email: values.email,
-        password: values.password,
-      });
+const onSubmit = async (values: LoginFormValues) => {
+  try {
+    const { error } = await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
+    });
 
-      if (error) {
-        toast.danger(error.message || "Login failed. Please check your credentials.");
+    if (error) {
+      const errorMessage = error.message || "Login failed.";
+
+      if (
+        errorMessage.toLowerCase().includes("verify") ||
+        errorMessage.toLowerCase().includes("verification")
+      ) {
+        router.push(
+          `/verify-email?email=${encodeURIComponent(values.email)}`
+        );
         return;
       }
 
-      toast.success("Login successful!", {
-        description: "Welcome back to Flowzen.",
-      });
-
-      router.push("/dashboard");
-    } catch {
-      toast.danger("Something went wrong. Please try again.");
+      toast.danger(errorMessage);
+      return;
     }
-  };
+
+    toast.success("Login successful!", {
+      description: "Welcome back to Flowzen.",
+    });
+
+    router.push("/dashboard");
+    router.refresh();
+  } catch {
+    toast.danger("Something went wrong. Please try again.");
+  }
+};
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

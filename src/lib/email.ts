@@ -1,7 +1,5 @@
 
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from "nodemailer";
 
 type SendEmailOptions = {
   to: string;
@@ -14,29 +12,39 @@ export async function sendEmail({
   subject,
   html,
 }: SendEmailOptions) {
+  const host = process.env.MAILTRAP_HOST;
+  const port = Number(process.env.MAILTRAP_PORT);
+  const user = process.env.MAILTRAP_USER;
+  const password = process.env.MAILTRAP_PASSWORD;
   const from = process.env.EMAIL_FROM;
 
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY is not configured.");
+  if (!host || !port || !user || !password || !from) {
+    throw new Error("Mailtrap SMTP environment variables are missing.");
   }
 
-  if (!from) {
-    throw new Error("EMAIL_FROM is not configured.");
-  }
-
-  const { data, error } = await resend.emails.send({
-    from,
-    to,
-    subject,
-    html,
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: {
+      user,
+      pass: password,
+    },
   });
 
-  if (error) {
-    console.error("Email delivery failed:", error);
-    throw new Error(error.message);
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+    });
+
+    console.info("Email captured by Mailtrap:", info.messageId);
+
+    return info;
+  } catch (error) {
+    console.error("Mailtrap email delivery failed:", error);
+    throw error;
   }
-
-  console.info("Email sent successfully:", data?.id);
-
-  return data;
 }
