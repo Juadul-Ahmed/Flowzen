@@ -19,6 +19,7 @@ import {
   contactSchema,
   type ContactInput,
 } from "@/lib/validations/contact";
+import type { Contact } from "@/components/contacts/contacts-table";
 
 interface Company {
   id: string;
@@ -26,27 +27,43 @@ interface Company {
 }
 
 interface ContactFormModalProps {
-  onCreated: () => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  contact: Contact | null;
+  onSaved: () => void;
 }
 
+const emptyContact: ContactInput = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  jobTitle: "",
+  companyId: "",
+};
+
 export default function ContactFormModal({
-  onCreated,
+  isOpen,
+  onOpenChange,
+  contact,
+  onSaved,
 }: ContactFormModalProps) {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<ContactInput>({
+  const isEditing = contact !== null;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      jobTitle: "",
-      companyId: "",
-    },
+    defaultValues: emptyContact,
   });
 
+  // Load available companies.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -59,9 +76,11 @@ export default function ContactFormModal({
 
         const result = await response.json();
 
-        if (response.ok && result.success) {
-          setCompanies(result.data?.companies ?? []);
+        if (!response.ok || !result.success) {
+          return;
         }
+
+        setCompanies(result.data?.companies ?? []);
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Failed to load companies:", error);
@@ -74,12 +93,36 @@ export default function ContactFormModal({
     return () => controller.abort();
   }, []);
 
+  // Reset the form whenever the modal opens or the selected contact changes.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (contact) {
+      reset({
+        firstName: contact.firstName ?? "",
+        lastName: contact.lastName ?? "",
+        email: contact.email ?? "",
+        phone: contact.phone ?? "",
+        jobTitle: contact.jobTitle ?? "",
+        companyId: contact.company?.id ?? "",
+      });
+    } else {
+      reset(emptyContact);
+    }
+  }, [isOpen, contact?.id, reset]);
+
   async function onSubmit(values: ContactInput) {
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/contacts", {
-        method: "POST",
+      const url = contact
+        ? `/api/contacts/${contact.id}`
+        : "/api/contacts";
+
+      const response = await fetch(url, {
+        method: contact ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -89,33 +132,35 @@ export default function ContactFormModal({
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to create contact.");
+        throw new Error(
+          result.message ||
+            `Failed to ${contact ? "update" : "create"} contact.`,
+        );
       }
 
-      toast.success("Contact created successfully.");
-      form.reset();
-      onCreated();
+      toast.success(
+        contact
+          ? "Contact updated successfully."
+          : "Contact created successfully.",
+      );
+
+      reset(emptyContact);
+      onOpenChange(false);
+      onSaved();
     } catch (error) {
-       toast(
-    error instanceof Error
-      ? error.message
-      : "Something went wrong.",
-    {
-      variant: "danger",
-    },
-  );
+      toast(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong.",
+        { variant: "danger" },
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <Modal>
-      <Button className="bg-primary font-semibold text-white">
-        <Users size={18} />
-        Add contact
-      </Button>
-
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <Modal.Backdrop>
         <Modal.Container placement="auto">
           <Modal.Dialog className="sm:max-w-lg">
@@ -126,10 +171,14 @@ export default function ContactFormModal({
                 <Users className="size-5" />
               </Modal.Icon>
 
-              <Modal.Heading>Add a new contact</Modal.Heading>
+              <Modal.Heading>
+                {isEditing ? "Edit contact" : "Add a new contact"}
+              </Modal.Heading>
 
               <p className="mt-1.5 text-sm leading-5 text-muted">
-                Add contact details and optionally associate them with a company.
+                {isEditing
+                  ? "Update this contact's information."
+                  : "Add contact details and optionally associate them with a company."}
               </p>
             </Modal.Header>
 
@@ -137,7 +186,7 @@ export default function ContactFormModal({
               <Surface variant="default">
                 <form
                   id="contact-form"
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={handleSubmit(onSubmit)}
                   className="flex flex-col gap-4"
                 >
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -145,12 +194,12 @@ export default function ContactFormModal({
                       className="w-full"
                       name="firstName"
                       variant="secondary"
-                      isInvalid={!!form.formState.errors.firstName}
+                      isInvalid={!!errors.firstName}
                     >
                       <Label>First name *</Label>
                       <Input
                         placeholder="Enter first name"
-                        {...form.register("firstName")}
+                        {...register("firstName")}
                       />
                     </TextField>
 
@@ -158,12 +207,12 @@ export default function ContactFormModal({
                       className="w-full"
                       name="lastName"
                       variant="secondary"
-                      isInvalid={!!form.formState.errors.lastName}
+                      isInvalid={!!errors.lastName}
                     >
                       <Label>Last name *</Label>
                       <Input
                         placeholder="Enter last name"
-                        {...form.register("lastName")}
+                        {...register("lastName")}
                       />
                     </TextField>
                   </div>
@@ -173,13 +222,13 @@ export default function ContactFormModal({
                     name="email"
                     type="email"
                     variant="secondary"
-                    isInvalid={!!form.formState.errors.email}
+                    isInvalid={!!errors.email}
                   >
                     <Label>Email</Label>
                     <Input
                       type="email"
                       placeholder="Enter email address"
-                      {...form.register("email")}
+                      {...register("email")}
                     />
                   </TextField>
 
@@ -188,13 +237,13 @@ export default function ContactFormModal({
                     name="phone"
                     type="tel"
                     variant="secondary"
-                    isInvalid={!!form.formState.errors.phone}
+                    isInvalid={!!errors.phone}
                   >
                     <Label>Phone</Label>
                     <Input
                       type="tel"
                       placeholder="Enter phone number"
-                      {...form.register("phone")}
+                      {...register("phone")}
                     />
                   </TextField>
 
@@ -202,22 +251,24 @@ export default function ContactFormModal({
                     className="w-full"
                     name="jobTitle"
                     variant="secondary"
-                    isInvalid={!!form.formState.errors.jobTitle}
+                    isInvalid={!!errors.jobTitle}
                   >
                     <Label>Job title</Label>
                     <Input
                       placeholder="e.g. Marketing Manager"
-                      {...form.register("jobTitle")}
+                      {...register("jobTitle")}
                     />
                   </TextField>
 
                   <div className="flex flex-col gap-2">
                     <Label>Company</Label>
+
                     <select
-                      {...form.register("companyId")}
+                      {...register("companyId")}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
                     >
                       <option value="">No company</option>
+
                       {companies.map((company) => (
                         <option key={company.id} value={company.id}>
                           {company.name}
@@ -230,7 +281,11 @@ export default function ContactFormModal({
             </Modal.Body>
 
             <Modal.Footer>
-              <Button slot="close" variant="secondary">
+              <Button
+                variant="secondary"
+                onPress={() => onOpenChange(false)}
+                isDisabled={isSubmitting}
+              >
                 Cancel
               </Button>
 
@@ -239,7 +294,11 @@ export default function ContactFormModal({
                 form="contact-form"
                 isDisabled={isSubmitting}
               >
-                {isSubmitting ? "Saving..." : "Create contact"}
+                {isSubmitting
+                  ? "Saving..."
+                  : isEditing
+                    ? "Save changes"
+                    : "Create contact"}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>

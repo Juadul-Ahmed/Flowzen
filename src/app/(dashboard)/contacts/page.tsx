@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@heroui/react";
-import { RefreshCw } from "lucide-react";
+import { Button, toast } from "@heroui/react";
+import { Plus, RefreshCw } from "lucide-react";
 
 import ContactsPageHeader from "@/components/contacts/contacts-page-header";
 import ContactsStats from "@/components/contacts/contacts-stats";
@@ -19,6 +19,16 @@ export default function ContactsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(
+    null,
+  );
+
+  const [deletingContactId, setDeletingContactId] = useState<string | null>(
+    null,
+  );
+
+  // Load contacts
   useEffect(() => {
     const controller = new AbortController();
 
@@ -33,9 +43,7 @@ export default function ContactsPage() {
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-          throw new Error(
-            result.message || "Failed to load contacts.",
-          );
+          throw new Error(result.message || "Failed to load contacts.");
         }
 
         setContacts(result.data ?? []);
@@ -57,22 +65,57 @@ export default function ContactsPage() {
 
     loadContacts();
 
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, [refreshKey]);
 
+  // Refresh contacts
   const handleRefresh = () => {
     setIsLoading(true);
     setRefreshKey((previous) => previous + 1);
   };
 
-  const handleEditContact = (contact: Contact) => {
-    console.log("Edit contact:", contact.id);
+  // Open create modal
+  const handleAddContact = () => {
+    setSelectedContact(null);
+    setIsContactModalOpen(true);
   };
 
-  const handleDeleteContact = (contact: Contact) => {
-    console.log("Delete contact:", contact.id);
+  // Open edit modal
+  const handleEditContact = (contact: Contact) => {
+    setSelectedContact(contact);
+    setIsContactModalOpen(true);
+  };
+
+  // Delete contact
+  const handleDeleteContact = async (contact: Contact) => {
+    if (deletingContactId) return;
+
+    setDeletingContactId(contact.id);
+
+    try {
+      const response = await fetch(`/api/contacts/${contact.id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to delete contact.");
+      }
+
+      toast.success("Contact deleted successfully.");
+
+      handleRefresh();
+    } catch (err) {
+      toast(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while deleting the contact.",
+        { variant: "danger" },
+      );
+    } finally {
+      setDeletingContactId(null);
+    }
   };
 
   const contactsWithCompany = contacts.filter(
@@ -85,8 +128,22 @@ export default function ContactsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <ContactsPageHeader totalContacts={contacts.length} />
 
-        <ContactFormModal onCreated={handleRefresh} />
+        <Button
+          className="bg-primary font-semibold text-white"
+          onPress={handleAddContact}
+        >
+          <Plus size={18} />
+          Add contact
+        </Button>
       </div>
+
+      {/* Shared Add/Edit Contact Modal */}
+      <ContactFormModal
+        isOpen={isContactModalOpen}
+        onOpenChange={setIsContactModalOpen}
+        contact={selectedContact}
+        onSaved={handleRefresh}
+      />
 
       {/* Statistics */}
       {isLoading ? (

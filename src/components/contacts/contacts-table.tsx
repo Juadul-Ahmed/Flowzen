@@ -1,7 +1,15 @@
+
 "use client";
 
 import { Button } from "@heroui/react";
-import { Building2, Mail, Phone, Pencil, Trash2 } from "lucide-react";
+import {
+  Building2,
+  Mail,
+  Phone,
+  Pencil,
+} from "lucide-react";
+
+import DeleteContactDialog from "@/components/contacts/delete-contact-dialog";
 
 export interface Contact {
   id: string;
@@ -32,7 +40,7 @@ export default function ContactsTable({
     return (
       <div className="flex flex-col items-center justify-center py-14 text-center">
         <div className="mb-4 rounded-full bg-primary/10 p-4 text-primary">
-          <UsersIcon />
+          <Building2 size={24} />
         </div>
 
         <h3 className="font-semibold text-foreground">
@@ -55,7 +63,9 @@ export default function ContactsTable({
             <th className="px-4 py-3 font-medium">Company</th>
             <th className="px-4 py-3 font-medium">Phone</th>
             <th className="px-4 py-3 font-medium">Date added</th>
-            <th className="px-4 py-3 text-right font-medium">Actions</th>
+            <th className="px-4 py-3 text-right font-medium">
+              Actions
+            </th>
           </tr>
         </thead>
 
@@ -89,6 +99,7 @@ export default function ContactsTable({
                 <p className="font-medium text-foreground">
                   {contact.company?.name || "—"}
                 </p>
+
                 <p className="mt-1 text-xs text-muted">
                   {contact.jobTitle || "No job title"}
                 </p>
@@ -117,16 +128,10 @@ export default function ContactsTable({
                     <Pencil size={15} />
                   </Button>
 
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="ghost"
-                    className="text-danger"
-                    aria-label={`Delete ${contact.firstName} ${contact.lastName}`}
-                    onPress={() => onDelete(contact)}
-                  >
-                    <Trash2 size={15} />
-                  </Button>
+                  <DeleteContactDialog
+                    contactName={`${contact.firstName} ${contact.lastName}`}
+                    onConfirm={() => onDelete(contact)}
+                  />
                 </div>
               </td>
             </tr>
@@ -135,8 +140,4 @@ export default function ContactsTable({
       </table>
     </div>
   );
-}
-
-function UsersIcon() {
-  return <Building2 size={24} />;
 }
