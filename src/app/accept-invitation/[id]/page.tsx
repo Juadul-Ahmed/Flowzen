@@ -14,12 +14,46 @@ export default function AcceptInvitationPage() {
   const { data: session, isPending } = authClient.useSession();
 
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+
+  async function handleResendVerification() {
+    if (!session?.user.email) return;
+
+    setIsResending(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const result = await authClient.sendVerificationEmail({
+        email: session.user.email,
+        callbackURL: `/accept-invitation/${invitationId}`,
+      });
+
+      if (result.error) {
+        setError(
+          result.error.message || "Unable to send verification email."
+        );
+        return;
+      }
+
+      setMessage(
+        "Verification email sent. Please check your inbox and verify your email."
+      );
+    } catch (error) {
+      console.error("Verification email error:", error);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsResending(false);
+    }
+  }
 
   async function handleAcceptInvitation() {
     setIsAccepting(true);
     setError("");
+    setMessage("");
 
     try {
       const result = await authClient.organization.acceptInvitation({
@@ -104,6 +138,26 @@ export default function AcceptInvitationPage() {
                 {error}
               </div>
             )}
+
+            {message && (
+              <div
+                role="status"
+                className="rounded-xl border border-success/20 bg-success/10 p-3 text-sm text-success"
+              >
+                {message}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={isResending}
+              className="w-full rounded-xl border border-default-300 px-4 py-3 text-sm font-semibold transition-colors hover:bg-default-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isResending
+                ? "Sending verification email..."
+                : "Resend verification email"}
+            </button>
 
             <button
               type="button"

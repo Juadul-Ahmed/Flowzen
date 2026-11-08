@@ -32,6 +32,7 @@ export const auth = betterAuth({
 
   // Email verification through Resend.
   emailVerification: {
+    sendOnSignUp: true,
     async sendVerificationEmail({ user, url }) {
       await sendEmail({
         to: user.email,
